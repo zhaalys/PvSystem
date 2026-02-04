@@ -28,33 +28,42 @@ def run_git_command(command):
     return True
 
 def auto_commit():
-    # 1. Random Delay (0 to 60 minutes) to make it look natural
-    # Note: For GitHub Actions, we don't want to wait *too* long as there's a timeout,
-    # but 0-1 hour is usually fine and adds good jitter.
-    delay_minutes = random.randint(0, 60)
-    print(f"Waiting for {delay_minutes} minutes before committing...")
-    time.sleep(delay_minutes * 60)
+    # 1. Random Delay before starting (0 to 30 minutes)
+    start_delay = random.randint(0, 30)
+    print(f"Waiting for {start_delay} minutes before starting batch...")
+    time.sleep(start_delay * 60)
 
-    # 2. Update the log file
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open("daily_log.txt", "a") as f:
-        f.write(f"Log entry at: {now}\n")
-    
-    # 3. Choose a random commit message
-    message = random.choice(COMMIT_MESSAGES)
-    
-    # 4. Git Push process
-    print(f"Executing commit: {message}")
-    if run_git_command(["git", "add", "daily_log.txt"]):
-        if run_git_command(["git", "commit", "-m", message]):
-            if run_git_command(["git", "push"]):
-                print("Successfully pushed to repository.")
+    # Deciding number of commits for this session (1 to 6)
+    num_commits = random.randint(1, 6)
+    print(f"Planned commits for this session: {num_commits}")
+
+    for i in range(num_commits):
+        # 2. Update the log file
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open("daily_log.txt", "a") as f:
+            f.write(f"Log entry {i+1}/{num_commits} at: {now}\n")
+        
+        # 3. Choose a random commit message
+        message = random.choice(COMMIT_MESSAGES)
+        
+        # 4. Git Add and Commit
+        print(f"Executing commit {i+1}/{num_commits}: {message}")
+        if run_git_command(["git", "add", "daily_log.txt"]):
+            if run_git_command(["git", "commit", "-m", message]):
+                print("Commit successful.")
             else:
-                print("Failed to push.")
-        else:
-            print("Nothing to commit or commit failed.")
+                print("Commit failed.")
+        
+        # Short random delay between commits (1 to 5 minutes) so timestamps vary
+        if i < num_commits - 1:
+            wait_time = random.randint(60, 300)
+            time.sleep(wait_time)
+
+    # 5. Push all at once at the end
+    if run_git_command(["git", "push"]):
+        print("Successfully pushed all commits to repository.")
     else:
-        print("Failed to add file.")
+        print("Failed to push.")
 
 if __name__ == "__main__":
     auto_commit()

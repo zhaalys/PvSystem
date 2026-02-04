@@ -26,8 +26,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "winterc0ldsye"
+          git config --global user.email "winterc0ldsye@gmail.com"
 
       - name: Run Auto-Commit Script
         run: python autocommit.py
