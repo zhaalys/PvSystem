@@ -33,8 +33,8 @@ def auto_commit():
     print(f"Waiting for {start_delay} minutes before starting batch...")
     time.sleep(start_delay * 60)
 
-    # Deciding number of commits for this session (Fixed 5 as requested)
-    num_commits = 5
+    # Deciding number of commits for this session (Fixed 10 as requested)
+    num_commits = 10
     print(f"Planned commits for this session: {num_commits}")
 
     for i in range(num_commits):
