@@ -3,8 +3,15 @@ name: Daily Auto Commit
 on:
   schedule:
     # Runs twice a day at 04:30 and 16:30 UTC
-    - cron: "30 4 * * *"
-    - cron: "30 16 * * *"
+    # Runs 4 times a day:
+    # 02:45 WIB -> 19:45 UTC
+    # 12:00 WIB -> 05:00 UTC
+    # 18:00 WIB -> 11:00 UTC
+    # 22:30 WIB -> 15:30 UTC
+    - cron: "45 19 * * *"
+    - cron: "0 5 * * *"
+    - cron: "0 11 * * *"
+    - cron: "30 15 * * *"
   workflow_dispatch: # Allows manual triggering
 
 jobs:
