@@ -52,7 +52,7 @@ def auto_commit(test_mode=False):
         print("Running in TEST MODE. Skipping initial delay.")
 
     # Deciding number of commits for this session
-    num_commits = 1 if test_mode else 10
+    num_commits = 1 if test_mode else 25
     print(f"Planned commits for this session: {num_commits}")
 
     for i in range(num_commits):
@@ -78,9 +78,10 @@ def auto_commit(test_mode=False):
         
         print(f"Commit {i+1} successful.")
         
-        # Short random delay between commits (1 to 5 minutes) so timestamps vary
+        # Short random delay between commits (timestamps vary)
         if i < num_commits - 1 and not test_mode:
-            wait_time = random.randint(30, 120) if is_github_action else random.randint(60, 300)
+            # Shortened delays for CI to stay within limits for 25 commits
+            wait_time = random.randint(10, 30) if is_github_action else random.randint(60, 300)
             print(f"Waiting for {wait_time} seconds before next commit...")
             time.sleep(wait_time)
 
