@@ -40,11 +40,13 @@ def auto_commit(test_mode=False):
     is_github_action = os.getenv("GITHUB_ACTIONS") == "true"
     
     if is_github_action:
-        print("--- CI DEBUG INFO ---")
+        print("--- CI INITIALIZATION ---")
+        # Explicitly set identity inside the script to avoid "Author identity unknown"
+        run_git_command(["git", "config", "--global", "user.name", "winterc0ldsye"])
+        run_git_command(["git", "config", "--global", "user.email", "winterc0ldsye@gmail.com"])
         run_git_command(["git", "--version"])
-        run_git_command(["git", "config", "--list"])
         print(f"Current Directory: {os.getcwd()}")
-        print("---------------------")
+        print("-------------------------")
 
     if not test_mode:
         # 1. Random Delay before starting
