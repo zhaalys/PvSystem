@@ -52,7 +52,7 @@ def auto_commit(test_mode=False):
         print("Running in TEST MODE. Skipping initial delay.")
 
     # Deciding number of commits for this session
-    num_commits = 1 if test_mode else 25
+    num_commits = 1 if test_mode else 100
     print(f"Planned commits for this session: {num_commits}")
 
     for i in range(num_commits):
