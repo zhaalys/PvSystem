@@ -39,15 +39,22 @@ def run_git_command(command):
 def auto_commit(test_mode=False):
     is_github_action = os.getenv("GITHUB_ACTIONS") == "true"
     
+    if is_github_action:
+        print("--- CI DEBUG INFO ---")
+        run_git_command(["git", "--version"])
+        run_git_command(["git", "config", "--list"])
+        print(f"Current Directory: {os.getcwd()}")
+        print("---------------------")
+
     if not test_mode:
-        # 1. Random Delay before starting (0 to 30 minutes)
+        # 1. Random Delay before starting
         start_delay = random.randint(0, 30)
         print(f"Waiting for {start_delay} minutes before starting batch...")
         if not is_github_action:
             time.sleep(start_delay * 60)
         else:
-            print("Detected GitHub Actions. Using shorter delay (1-5 min) to avoid timeout/idle.")
-            time.sleep(random.randint(60, 300))
+            print("Detected GitHub Actions. Using shorter delay (1-2 min) to avoid timeout/idle.")
+            time.sleep(random.randint(30, 120))
     else:
         print("Running in TEST MODE. Skipping initial delay.")
 
@@ -68,35 +75,33 @@ def auto_commit(test_mode=False):
         
         # 4. Git Add and Commit
         print(f"Executing commit {i+1}/{num_commits}: {message}")
-        if not run_git_command(["git", "add", "daily_log.txt"]):
-            print("Git add failed. Exiting.")
-            sys.exit(1)
+        run_git_command(["git", "add", "daily_log.txt"])
             
-        if not run_git_command(["git", "commit", "-m", message]):
+        # Using --allow-empty to prevent failure if git thinks nothing changed
+        if not run_git_command(["git", "commit", "--allow-empty", "-m", message]):
             print("Git commit failed. Exiting.")
             sys.exit(1)
         
         print(f"Commit {i+1} successful.")
         
-        # Short random delay between commits (timestamps vary)
+        # Short random delay between commits
         if i < num_commits - 1 and not test_mode:
-            # Shortened delays for CI to stay within limits for 25 commits
-            wait_time = random.randint(10, 30) if is_github_action else random.randint(60, 300)
+            # Very short delays for CI to handle 100 commits quickly
+            wait_time = random.randint(5, 15) if is_github_action else random.randint(30, 90)
             print(f"Waiting for {wait_time} seconds before next commit...")
             time.sleep(wait_time)
 
     # 5. Push all at once at the end
     print("Pushing all commits to remote...")
-    # In CI, we want to make sure we are pushing to the right branch
     push_command = ["git", "push"]
     if is_github_action:
-        # Ensure we push to the current branch
+        # Explicit push to current branch
         push_command = ["git", "push", "origin", "HEAD"]
         
     if run_git_command(push_command):
         print("Successfully pushed all commits to repository.")
     else:
-        print("Failed to push. Exiting.")
+        print("Failed to push. Possible permission issue (Check Workflow Permissions in Settings).")
         sys.exit(1)
 
 if __name__ == "__main__":
