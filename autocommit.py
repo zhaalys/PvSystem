@@ -50,13 +50,13 @@ def auto_commit(test_mode=False):
         print(f"Initial delay: {delay} seconds")
         time.sleep(delay)
 
-    num_commits = 1 if test_mode else 100
+    num_commits = 1 if test_mode else 25
     print(f"Batch size: {num_commits}")
 
     for i in range(num_commits):
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open("daily_log.txt", "a") as f:
-            f.write(f"Commit {i+1}/{num_commits} at {now}\n")
+            f.write(f"Log entry {i+1}/{num_commits} at: {now}\n")
         
         message = random.choice(COMMIT_MESSAGES)
         if test_mode: message = f"test: {message}"
