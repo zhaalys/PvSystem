@@ -1,12 +1,10 @@
 import random
-import time
 import subprocess
 import sys
-import argparse
 import os
 from datetime import datetime
 
-# List of professional developer-style commit messages
+# Commit messages yang profesional
 COMMIT_MESSAGES = [
     "refactor: optimize internal log structure",
     "docs: update maintenance logs",
@@ -22,75 +20,62 @@ COMMIT_MESSAGES = [
     "refactor: clean up log entries"
 ]
 
-def run_git_command(command):
-    try:
-        print(f"Executing: {' '.join(command)}")
-        result = subprocess.run(command, check=True, capture_output=True, text=True)
-        if result.stdout:
-            print(f"Output: {result.stdout.strip()}")
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"FAILED: {' '.join(command)}")
-        print(f"Error: {e.stderr.strip()}")
+TOTAL_COMMITS = 50
+
+def run_git(command):
+    print(f"  > {' '.join(command)}")
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"  ERROR: {result.stderr.strip()}")
         return False
+    return True
 
-def auto_commit(test_mode=False):
-    is_github_action = os.getenv("GITHUB_ACTIONS") == "true"
-    
-    # 1. Identity Setup (Crucial for CI)
-    if is_github_action:
-        repo = os.getenv("GITHUB_REPOSITORY", "")
-        if "zhaalys/PvSystem" in repo or "Github-Auto" in repo:
-            username = "winterc0ldsye"
-            email = "winterc0ldsye@gmail.com"
-        else:
-            username = "DacterMonster"
-            email = "fcfaisal51@gmail.com"
-            
-        run_git_command(["git", "config", "user.name", username])
-        run_git_command(["git", "config", "user.email", email])
+def main():
+    print("=" * 50)
+    print("  AUTO COMMIT - 50 Commits Per Day")
+    print("=" * 50)
+    print()
 
-    # 2. Delay Strategy
-    if not test_mode:
-        delay = random.randint(10, 60) if is_github_action else random.randint(300, 1800)
-        print(f"Initial delay: {delay} seconds")
-        time.sleep(delay)
-
-    num_commits = 1 if test_mode else 100
-    print(f"Batch size: {num_commits}")
-
-    for i in range(num_commits):
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open("daily_log.txt", "a") as f:
-            f.write(f"Commit {i+1}/{num_commits} at: {now}\n")
-        
-        message = random.choice(COMMIT_MESSAGES)
-        if test_mode: message = f"test: {message}"
-        
-        run_git_command(["git", "add", "daily_log.txt"])
-        # We use --allow-empty just in case, though file always changes
-        if not run_git_command(["git", "commit", "--allow-empty", "-m", message]):
-            print("Abort: Commit failed.")
-            sys.exit(1)
-        
-        if i < num_commits - 1 and not test_mode:
-            wait = random.randint(2, 10) if is_github_action else random.randint(30, 60)
-            time.sleep(wait)
-
-    # 3. Pull-Rebase-Push Strategy (The Final Boss of Reliability)
-    print("Finalizing updates...")
-    if is_github_action:
-        # Pull latest changes just in case something happened while we were committing
-        run_git_command(["git", "pull", "--rebase", "origin", "main"])
-        
-    if run_git_command(["git", "push", "origin", "HEAD"]):
-        print("DONE: All changes pushed successfully.")
-    else:
-        print("FAILED: Push blocked. Check 'Workflow permissions' in GitHub Settings.")
+    # Cek apakah di dalam git repo
+    if not os.path.exists(".git"):
+        print("ERROR: Bukan git repository! Jalankan di folder project.")
+        input("\nTekan Enter untuk keluar...")
         sys.exit(1)
 
+    # Pull dulu biar sync
+    print("Syncing dengan GitHub...")
+    run_git(["git", "pull", "--rebase", "origin", "main"])
+    print()
+
+    print(f"Memulai {TOTAL_COMMITS} commits...\n")
+
+    for i in range(TOTAL_COMMITS):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open("daily_log.txt", "a") as f:
+            f.write(f"Commit {i+1}/{TOTAL_COMMITS} at: {now}\n")
+
+        message = random.choice(COMMIT_MESSAGES)
+        run_git(["git", "add", "daily_log.txt"])
+
+        if not run_git(["git", "commit", "--allow-empty", "-m", message]):
+            print(f"\nGAGAL di commit {i+1}!")
+            input("\nTekan Enter untuk keluar...")
+            sys.exit(1)
+
+        progress = int((i + 1) / TOTAL_COMMITS * 100)
+        bar = "█" * (progress // 2) + "░" * (50 - progress // 2)
+        print(f"  [{bar}] {progress}% ({i+1}/{TOTAL_COMMITS})")
+
+    print(f"\n{'=' * 50}")
+    print("  Pushing ke GitHub...")
+    print("=" * 50)
+
+    if run_git(["git", "push", "origin", "HEAD"]):
+        print("\n✅ SELESAI! 50 commits berhasil di-push ke GitHub.")
+    else:
+        print("\n❌ Push gagal! Cek koneksi atau credential GitHub.")
+
+    input("\nTekan Enter untuk keluar...")
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--test", action="store_true")
-    args = parser.parse_args()
-    auto_commit(test_mode=args.test)
+    main()
