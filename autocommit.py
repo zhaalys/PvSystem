@@ -20,7 +20,7 @@ COMMIT_MESSAGES = [
     "refactor: clean up log entries"
 ]
 
-TOTAL_COMMITS = 50
+TOTAL_COMMITS = 10
 
 def run_git(command):
     print(f"  > {' '.join(command)}")
@@ -32,7 +32,7 @@ def run_git(command):
 
 def main():
     print("=" * 50)
-    print("  AUTO COMMIT - 50 Commits Per Day")
+    print("  AUTO COMMIT - 10 Commits Per Day")
     print("=" * 50)
     print()
 
@@ -71,7 +71,7 @@ def main():
     print("=" * 50)
 
     if run_git(["git", "push", "origin", "HEAD"]):
-        print("\n✅ SELESAI! 50 commits berhasil di-push ke GitHub.")
+        print(f"\n✅ SELESAI! {TOTAL_COMMITS} commits berhasil di-push ke GitHub.")
     else:
         print("\n❌ Push gagal! Cek koneksi atau credential GitHub.")
 

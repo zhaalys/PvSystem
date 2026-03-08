@@ -1,4 +1,4 @@
 @echo off
-title Auto Commit - 50 Commits
+title Auto Commit - 10 Commits
 cd /d "%~dp0"
 python autocommit.py
